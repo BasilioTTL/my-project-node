@@ -2,14 +2,14 @@ name: Publish Docker to GitHub Packages
 
 on:
   push:
-    branches: [ "master" ]  # Триггер на коммиты в master
+    branches: ["master"] # Триггер на коммиты в master
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write  # Ключевое разрешение!
+      packages: write # Ключевое разрешение!
 
     steps:
       # Шаг 1: Получаем код репозитория
@@ -22,19 +22,19 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}  # Токен генерируется автоматически!
+          password: ${{ secrets.GITHUB_TOKEN }} # Токен генерируется автоматически!
 
       # Шаг 3: Сборка и публикация образа
       - name: Build and push
         run: |
           # Формат имени образа: ghcr.io/владелец_репо/имя-образа:тег
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/my-project-node:latest"
-          
+          IMAGE_NAME="ghcr.io/basiliottl/my-project-node:latest"
+
           # Собираем образ
           docker build -t $IMAGE_NAME .
-          
+
           # Пушим в GitHub Packages
           docker push $IMAGE_NAME
-          
+
           # Опционально: выводим ссылку на образ
           echo "Образ опубликован: $IMAGE_NAME"
