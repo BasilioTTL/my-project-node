@@ -1,13 +1,40 @@
-name: Docker Build
+name: Publish Docker to GitHub Packages
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master" ]  # Триггер на коммиты в master
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write  # Ключевое разрешение!
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Build Docker image
-        run: docker build -t node-hello-world .
+      # Шаг 1: Получаем код репозитория
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Шаг 2: Логинимся в GHCR (встроенный Docker-репозиторий GitHub)
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}  # Токен генерируется автоматически!
+
+      # Шаг 3: Сборка и публикация образа
+      - name: Build and push
+        run: |
+          # Формат имени образа: ghcr.io/владелец_репо/имя-образа:тег
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/my-project-node:latest"
+          
+          # Собираем образ
+          docker build -t $IMAGE_NAME .
+          
+          # Пушим в GitHub Packages
+          docker push $IMAGE_NAME
+          
+          # Опционально: выводим ссылку на образ
+          echo "Образ опубликован: $IMAGE_NAME"
